@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>記事一覧</h2>
+    <div id="posts">
+        {% for post in post_list %}
+            <p>{{ post.title }}</p>
+        {% endfor %}
+    </div>
+
+    <hr>
+
+    <h2>記事の追加</h2>
+    <form id="ajax-add-post" action="{% url 'app:ajax_post_add' %}" method="POST">
+        <input type="text" id="id_title" required>
+        <button type="submit" >送信</button>
+        {% csrf_token %}
+    </form>
+
+{% endblock %}
+
+{% block extrajs %}
+    <script>
+        const getCookie = name =>{
+            if (document.cookie && document.cookie !== '') {
+                for (const cookie of document.cookie.split(';')){
+                    const [key, value] = cookie.trim().split('=');
+                    if(key === name) {
+                        return decodeURIComponent(value);
+                    }
+                }
+            }
+        };
+        const csrftoken = getCookie('csrftoken');
+
+        // 送信ボタンで呼ばれる
+        document.getElementById('ajax-add-post').addEventListener('submit', e => {
+            // デフォルトのイベントをキャンセルし、ページ遷移しないように!
+            e.preventDefault();
+
+            const url = '{% url "app:ajax_post_add" %}';
+            const postArea = document.getElementById('posts');
+            const title = encodeURIComponent(document.getElementById('id_title').value);
+            fetch(url, {
+                method: 'POST',
+                body: `title=${title}`,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+                    'X-CSRFToken': csrftoken,
+                },
+            }).then(response => {
+                return response.json();
+            }).then(response => {
+                const p = document.createElement('p');
+                p.textContent = response.title;
+                postArea.insertBefore(p, postArea.firstChild);
+            }).catch(error => {
+                console.log(error);
+            });
+        });
+    </script>
+
+
+{% endblock %}

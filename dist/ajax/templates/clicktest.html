@@ -1,0 +1,102 @@
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+
+    <title>clicktest</title>
+  </head>
+  <body>
+    <div class="container">
+
+        <canvas id="cvs" width="500" height="500" style="background-color: blue;"></canvas>
+
+            <h2>記事一覧</h2>
+            <div id="posts">
+                {% for post in post_list %}
+                    <p>{{ post.title }}</p>
+                {% endfor %}
+            </div>
+        
+            <hr>
+        
+            <h2>記事の追加</h2>
+            <form id="ajax_post_form" action="{% url 'app:clicktest_add' %}" method="POST">
+                <input type="text" id="id_title" required>
+                <button type="submit" >送信</button>
+                {% csrf_token %}
+            </form>
+
+    </div>
+
+    <script>
+        const getCookie = name =>{
+            if (document.cookie && document.cookie !== '') {
+                for (const cookie of document.cookie.split(';')){
+                    const [key, value] = cookie.trim().split('=');
+                    if(key === name) {
+                        return decodeURIComponent(value);
+                    }
+                }
+            }
+        };
+        const csrftoken = getCookie('csrftoken');
+
+        // // 送信ボタンで呼ばれる
+        // document.getElementById('ajax_post_form').addEventListener('submit', e => {
+        //     // デフォルトのイベントをキャンセルし、ページ遷移しないように!
+        //     e.preventDefault();
+        //     letsFetch("str");
+        // });
+
+        function letsFetch(str_){
+            const url = '{% url "app:clicktest_add" %}';
+            const postArea = document.getElementById('posts');
+            // alert(document.getElementById('id_title').value);
+            const title = encodeURIComponent(document.getElementById('id_title').value);
+            fetch(url, {
+                method: 'POST',
+                body: `title=${str_}`,
+                // body: `title=${title}`,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+                    'X-CSRFToken': csrftoken,
+                },
+            }).then(response => {
+                return response.json();
+            }).then(jsondata => {
+                console.log(jsondata);
+                postArea.innerHTML = "";
+                for(let i=0; i<jsondata.datas.length; i++){
+                    const p = document.createElement('p');
+                    p.textContent = jsondata.datas[i];
+                    postArea.appendChild(p);
+                }
+            }).catch(error => {
+                console.log(error);
+            });
+        }
+
+        let cvs = document.getElementById("cvs");
+        cvs.addEventListener('click', cvs_click, false);
+
+        function cvs_click(e){
+            let rect = e.target.getBoundingClientRect();
+            let dt_ = Date.now();
+
+            let dt_str = dt_.toString();
+            let type_ = "click";
+            let username_ = "mogawa";
+            let x = Math.floor(e.clientX - rect.left);
+            let y = Math.floor(e.clientY - rect.top);
+
+            let str_ = "" + dt_str + "|" + type_ + "|" + username_ + "|" + x + "|" + y;
+
+            // let form_ = document.getElementById('ajax_post_form');
+            // let title_ = document.getElementById('id_title');
+            // title_.value = "click";
+            // form_.submit();
+            letsFetch(str_);
+        }
+    </script>
+
+</body>
+</html>

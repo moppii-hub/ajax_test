@@ -25,7 +25,7 @@ SECRET_KEY = 'f%l%!jd6#gaohkllp=w18wn1j26et!=t8so0-l#l@aj(l6@8h='
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1"]
+ALLOWED_HOSTS = ["127.0.0.1", "experimental.makotogawa.com"]
 
 
 # Application definition
